@@ -27,13 +27,30 @@ const fileFilter = (req, file, cb) => {
 
 const upload = multer({ storage, fileFilter });
 
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
 app.use('/cdn', express.static('uploads'));
 
+let filesData = [];
+
 app.post('/upload', upload.single('file'), (req, res) => {
+  const { description } = req.body;
   if (!req.file) return res.status(400).send('Upload failed or not allowed.');
+
   const fileUrl = `${req.protocol}://${req.get('host')}/cdn/${req.file.filename}`;
+  const fileData = {
+    name: req.file.filename,
+    url: fileUrl,
+    description: description || 'No description provided'
+  };
+
+  filesData.push(fileData);
   res.send({ success: true, url: fileUrl });
 });
 
-app.listen(PORT, () => console.log(`http://localhost:${PORT}`));
+app.get('/files', (req, res) => {
+  res.json(filesData);
+});
+
+app.listen(PORT, () => console.log(`Server running at http://localhost:${PORT}`));
