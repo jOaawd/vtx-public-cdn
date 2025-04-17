@@ -34,26 +34,50 @@ app.use('/cdn', express.static('uploads'));
 
 let filesData = [];
 
+const uploadLimit = {};
+
 app.post('/upload', upload.single('file'), (req, res) => {
   const { description } = req.body;
   const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
 
+  const userInfo = {
+    ip,
+    userAgent: req.headers['user-agent'],
+    referrer: req.headers['referer'] || req.headers['referrer'] || 'N/A',
+    host: req.headers['host'],
+    languages: req.headers['accept-language'],
+    timestamp: new Date().toISOString()
+  };
+
+  const currentTime = Date.now();
+
+  if (!uploadLimit[ip]) {
+    uploadLimit[ip] = [];
+  }
+
+  uploadLimit[ip] = uploadLimit[ip].filter(timestamp => currentTime - timestamp <= 600000);
+
+  if (uploadLimit[ip].length >= 5) {
+    return res.status(429).send('Rate limit exceeded. Try again later.');
+  }
+
   if (!req.file) {
-    console.log(`Upload failed from IP: ${ip}`);
     return res.status(400).send('Upload failed or not allowed.');
   }
+
+  uploadLimit[ip].push(currentTime);
 
   const fileUrl = `${req.protocol}://${req.get('host')}/cdn/${req.file.filename}`;
   const fileData = {
     name: req.file.filename,
+    originalName: req.file.originalname,
     url: fileUrl,
     description: description || 'No description provided',
-    ip: ip
+    uploadedAt: userInfo.timestamp,
+    userInfo
   };
 
   filesData.push(fileData);
-
-  console.log(`File uploaded: ${req.file.filename}, IP: ${ip}`);
 
   res.send({ success: true, url: fileUrl });
 });
@@ -62,4 +86,6 @@ app.get('/files', (req, res) => {
   res.json(filesData);
 });
 
-app.listen(PORT, () => console.log(`Server running at http://localhost:${PORT}`));
+app.listen(PORT, () => {
+  console.log(`Server running at http://localhost:${PORT}`);
+});
