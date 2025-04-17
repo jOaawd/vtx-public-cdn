@@ -2,7 +2,6 @@ require('dotenv').config();
 const express = require('express');
 const multer = require('multer');
 const path = require('path');
-const fs = require('fs');
 const crypto = require('crypto');
 const { B2 } = require('b2-sdk');
 
@@ -25,7 +24,6 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 let filesData = [];
-
 const uploadLimit = {};
 
 app.post('/upload', upload.single('file'), async (req, res) => {
@@ -63,8 +61,9 @@ app.post('/upload', upload.single('file'), async (req, res) => {
   const randomName = crypto.randomBytes(8).toString('hex') + fileExtension;
 
   try {
+    await b2.authorize();
     const uploadResponse = await b2.uploadFile({
-      bucketId: bucketName,
+      bucketId: process.env.B2_BUCKET_ID,
       fileName: randomName,
       data: req.file.buffer,
       mime: req.file.mimetype,
