@@ -4,7 +4,7 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const crypto = require('crypto');
-const B2 = require('b2-sdk');
+const { B2 } = require('b2-sdk');
 
 const app = express();
 const PORT = 3000;
@@ -14,7 +14,7 @@ const b2 = new B2({
   applicationKey: process.env.B2_APPLICATION_KEY,
 });
 
-const bucketName = 'VTX-CDN';
+const bucketName = 'your-bucket-name';
 
 b2.authorize().then(() => {
   console.log('Connected to Backblaze B2');
