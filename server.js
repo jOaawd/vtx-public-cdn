@@ -36,16 +36,25 @@ let filesData = [];
 
 app.post('/upload', upload.single('file'), (req, res) => {
   const { description } = req.body;
-  if (!req.file) return res.status(400).send('Upload failed or not allowed.');
+  const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+
+  if (!req.file) {
+    console.log(`Upload failed from IP: ${ip}`);
+    return res.status(400).send('Upload failed or not allowed.');
+  }
 
   const fileUrl = `${req.protocol}://${req.get('host')}/cdn/${req.file.filename}`;
   const fileData = {
     name: req.file.filename,
     url: fileUrl,
-    description: description || 'No description provided'
+    description: description || 'No description provided',
+    ip: ip
   };
 
   filesData.push(fileData);
+
+  console.log(`File uploaded: ${req.file.filename}, IP: ${ip}`);
+
   res.send({ success: true, url: fileUrl });
 });
 
