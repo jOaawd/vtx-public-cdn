@@ -79,6 +79,12 @@ app.post('/upload', upload.single('file'), (req, res) => {
 
   filesData.push(fileData);
 
+  console.log('--- New Upload ---');
+  console.log(`File uploaded: ${req.file.filename}`);
+  console.log(`Original file: ${req.file.originalname}`);
+  console.log('User Info:', userInfo);
+  console.log('------------------');
+
   res.send({ success: true, url: fileUrl });
 });
 
