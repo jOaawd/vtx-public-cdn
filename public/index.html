@@ -1,41 +1,42 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>File Upload</title>
+  <meta charset="UTF-8" />
+  <title>Public CDN VTX</title>
   <style>
     :root {
-      --bg: #f5f5f5;
-      --fg: #333;
-      --card-bg: #fff;
-      --link: #007bff;
-      --button-bg: #007bff;
-      --button-hover: #0056b3;
-    }
+      --bg-light: #ffffff;
+      --fg-light: #000000;
+      --card-bg-light: #f7f7f7;
+      --link-light: #0077b6;
+      --button-bg-light: #0077b6;
+      --button-hover-light: #005f8c;
+      --border-light: #e0e0e0;
 
-    body.dark {
-      --bg: #121212;
-      --fg: #eee;
-      --card-bg: #1e1e1e;
-      --link: #4dabf7;
-      --button-bg: #1a73e8;
-      --button-hover: #0f5bd3;
-    }
-
-    * {
-      box-sizing: border-box;
+      --bg-dark: #121212;
+      --fg-dark: #ffffff;
+      --card-bg-dark: #1e1e1e;
+      --link-dark: #9b4dca;
+      --button-bg-dark: #6200ea;
+      --button-hover-dark: #3700b3;
+      --border-dark: #444444;
     }
 
     body {
-      font-family: Arial, sans-serif;
-      background: var(--bg);
-      color: var(--fg);
+      font-family: "Segoe UI", sans-serif;
+      background: var(--bg-light);
+      color: var(--fg-light);
       margin: 0;
       padding: 2rem;
       display: flex;
       flex-direction: column;
       align-items: center;
-      transition: background 0.3s, color 0.3s;
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    body.dark {
+      background: var(--bg-dark);
+      color: var(--fg-dark);
     }
 
     h1, h2 {
@@ -46,60 +47,81 @@
       position: absolute;
       top: 1rem;
       right: 1rem;
-      background: var(--button-bg);
+      background: var(--button-bg-light);
       color: #fff;
       border: none;
       padding: 0.5rem 1rem;
-      border-radius: 5px;
+      border-radius: 8px;
       cursor: pointer;
       transition: background 0.3s ease-in-out;
     }
 
     .theme-toggle:hover {
-      background: var(--button-hover);
+      background: var(--button-hover-light);
     }
 
     form {
-      background: var(--card-bg);
+      background: var(--card-bg-light);
       padding: 1.5rem;
-      border-radius: 10px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      border-radius: 8px;
+      border: 1px solid var(--border-light);
       margin-bottom: 2rem;
+      width: 100%;
+      max-width: 420px;
       display: flex;
       flex-direction: column;
       gap: 1rem;
-      width: 100%;
-      max-width: 400px;
-      transition: background 0.3s;
+      transition: background 0.3s, border-color 0.3s;
     }
 
-    input[type="file"], textarea {
-      border: 1px solid #ccc;
-      padding: 0.5rem;
-      border-radius: 5px;
-      background: var(--bg);
-      color: var(--fg);
-      width: 100%;
+    body.dark form {
+      background: var(--card-bg-dark);
+      border: 1px solid var(--border-dark);
+    }
+
+    input[type="file"],
+    textarea {
+      border: 1px solid var(--border-light);
+      padding: 0.8rem;
+      border-radius: 6px;
+      background: #ffffff;
+      color: var(--fg-light);
+      font-size: 1rem;
+      transition: border-color 0.3s, background-color 0.3s;
+    }
+
+    body.dark input[type="file"],
+    body.dark textarea {
+      background: #2c2c2c;
+      color: var(--fg-dark);
     }
 
     textarea {
       resize: vertical;
-      min-height: 60px;
+      min-height: 70px;
     }
 
     button {
-      padding: 0.75rem;
-      border: none;
-      border-radius: 5px;
-      background-color: var(--button-bg);
+      background: var(--button-bg-light);
       color: #fff;
+      padding: 0.8rem;
+      border: none;
+      border-radius: 6px;
       font-size: 1rem;
       cursor: pointer;
-      transition: background 0.2s ease-in-out;
+      transition: background 0.3s;
+    }
+
+    body.dark button {
+      background: var(--button-bg-dark);
     }
 
     button:hover {
-      background-color: var(--button-hover);
+      background: var(--button-hover-light);
+    }
+
+    body.dark button:hover {
+      background: var(--button-hover-dark);
     }
 
     #result {
@@ -116,28 +138,37 @@
     }
 
     li {
-      background: var(--card-bg);
-      margin-bottom: 0.75rem;
-      padding: 0.75rem 1rem;
+      background: var(--card-bg-light);
+      border: 1px solid var(--border-light);
+      padding: 1rem;
       border-radius: 8px;
-      box-shadow: 0 1px 5px rgba(0,0,0,0.05);
+      margin-bottom: 1rem;
       display: flex;
       align-items: center;
-      gap: 12px;
-      transition: background 0.3s;
+      gap: 14px;
+      transition: background 0.3s, border-color 0.3s;
+    }
+
+    body.dark li {
+      background: var(--card-bg-dark);
+      border: 1px solid var(--border-dark);
     }
 
     li img.thumb {
       height: 60px;
       width: auto;
-      border-radius: 4px;
       object-fit: cover;
+      border-radius: 6px;
     }
 
     li a {
+      color: var(--link-light);
       text-decoration: none;
-      color: var(--link);
       word-break: break-word;
+    }
+
+    body.dark li a {
+      color: var(--link-dark);
     }
 
     li a:hover {
@@ -146,13 +177,17 @@
 
     .description {
       font-size: 0.9rem;
-      color: var(--fg);
+      color: var(--fg-light);
       white-space: pre-wrap;
+    }
+
+    body.dark .description {
+      color: var(--fg-dark);
     }
   </style>
 </head>
 <body>
-  <button class="theme-toggle" id="themeToggle">Toggle Dark Mode</button>
+  <button class="theme-toggle" id="themeToggle">Toggle Theme</button>
 
   <h1>Upload a File</h1>
   <form id="uploadForm">
@@ -161,7 +196,7 @@
     <button type="submit">Upload</button>
   </form>
   <p id="result"></p>
-
+<c>Style made by eee from vortex or wtv thanks</c>
   <h2>Uploaded Files</h2>
   <ul id="fileList"></ul>
 
@@ -179,7 +214,6 @@
       const files = await res.json();
       files.forEach(file => {
         const li = document.createElement('li');
-
         if (isImage(file.name)) {
           li.innerHTML = `
             <a href="${file.url}" target="_blank">
@@ -189,9 +223,11 @@
             <div class="description">${file.description || 'No description available'}</div>
           `;
         } else {
-          li.innerHTML = `<a href="${file.url}" target="_blank">${file.name}</a><div class="description">${file.description || 'No description available'}</div>`;
+          li.innerHTML = `
+            <a href="${file.url}" target="_blank">${file.name}</a>
+            <div class="description">${file.description || 'No description available'}</div>
+          `;
         }
-
         fileList.appendChild(li);
       });
     };
@@ -224,7 +260,7 @@
     });
 
     window.onload = () => {
-      const storedTheme = localStorage.getItem('theme') || 'light';
+      const storedTheme = localStorage.getItem('theme') || 'dark';
       applyTheme(storedTheme);
       loadFiles();
     };
