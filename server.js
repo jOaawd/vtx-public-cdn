@@ -61,9 +61,8 @@ app.post('/upload', upload.single('file'), async (req, res) => {
   const randomName = crypto.randomBytes(8).toString('hex') + fileExtension;
 
   try {
-    await b2.authorize();
     const uploadResponse = await b2.uploadFile({
-      bucketId: process.env.B2_BUCKET_ID,
+      bucketId: process.env.B2_BUCKET_ID,  
       fileName: randomName,
       data: req.file.buffer,
       mime: req.file.mimetype,
