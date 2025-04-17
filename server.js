@@ -14,7 +14,9 @@ const b2 = new B2({
   applicationKey: process.env.B2_APPLICATION_KEY,
 });
 
-const bucketName = 'your-bucket-name';
+const bucketName = 'VTX-CDN';
+
+app.use(express.static(path.join(__dirname, 'public')));
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
@@ -61,7 +63,6 @@ app.post('/upload', upload.single('file'), async (req, res) => {
   const randomName = crypto.randomBytes(8).toString('hex') + fileExtension;
 
   try {
-    // Upload the file directly to Backblaze B2
     const uploadResponse = await b2.uploadFile({
       bucketId: bucketName,
       fileName: randomName,
@@ -91,6 +92,10 @@ app.post('/upload', upload.single('file'), async (req, res) => {
 
 app.get('/files', (req, res) => {
   res.json(filesData);
+});
+
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 app.listen(PORT, () => {
