@@ -16,12 +16,6 @@ const b2 = new B2({
 
 const bucketName = 'your-bucket-name';
 
-b2.authorize().then(() => {
-  console.log('Connected to Backblaze B2');
-}).catch(err => {
-  console.error('Failed to authorize with Backblaze B2', err);
-});
-
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
@@ -67,6 +61,7 @@ app.post('/upload', upload.single('file'), async (req, res) => {
   const randomName = crypto.randomBytes(8).toString('hex') + fileExtension;
 
   try {
+    // Upload the file directly to Backblaze B2
     const uploadResponse = await b2.uploadFile({
       bucketId: bucketName,
       fileName: randomName,
