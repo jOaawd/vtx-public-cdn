@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>File Upload</title>
+  <style>
+    :root {
+      --bg: #f5f5f5;
+      --fg: #333;
+      --card-bg: #fff;
+      --link: #007bff;
+      --button-bg: #007bff;
+      --button-hover: #0056b3;
+    }
+
+    body.dark {
+      --bg: #121212;
+      --fg: #eee;
+      --card-bg: #1e1e1e;
+      --link: #4dabf7;
+      --button-bg: #1a73e8;
+      --button-hover: #0f5bd3;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background: var(--bg);
+      color: var(--fg);
+      margin: 0;
+      padding: 2rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    h1, h2 {
+      margin-bottom: 1rem;
+    }
+
+    .theme-toggle {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      background: var(--button-bg);
+      color: #fff;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background 0.3s ease-in-out;
+    }
+
+    .theme-toggle:hover {
+      background: var(--button-hover);
+    }
+
+    form {
+      background: var(--card-bg);
+      padding: 1.5rem;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      margin-bottom: 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      width: 100%;
+      max-width: 400px;
+      transition: background 0.3s;
+    }
+
+    input[type="file"], textarea {
+      border: 1px solid #ccc;
+      padding: 0.5rem;
+      border-radius: 5px;
+      background: var(--bg);
+      color: var(--fg);
+      width: 100%;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 60px;
+    }
+
+    button {
+      padding: 0.75rem;
+      border: none;
+      border-radius: 5px;
+      background-color: var(--button-bg);
+      color: #fff;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.2s ease-in-out;
+    }
+
+    button:hover {
+      background-color: var(--button-hover);
+    }
+
+    #result {
+      margin-top: -1rem;
+      margin-bottom: 2rem;
+      font-weight: bold;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+      width: 100%;
+      max-width: 600px;
+    }
+
+    li {
+      background: var(--card-bg);
+      margin-bottom: 0.75rem;
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      box-shadow: 0 1px 5px rgba(0,0,0,0.05);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transition: background 0.3s;
+    }
+
+    li img.thumb {
+      height: 60px;
+      width: auto;
+      border-radius: 4px;
+      object-fit: cover;
+    }
+
+    li a {
+      text-decoration: none;
+      color: var(--link);
+      word-break: break-word;
+    }
+
+    li a:hover {
+      text-decoration: underline;
+    }
+
+    .description {
+      font-size: 0.9rem;
+      color: var(--fg);
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <button class="theme-toggle" id="themeToggle">Toggle Dark Mode</button>
+
+  <h1>Upload a File</h1>
+  <form id="uploadForm">
+    <input type="file" name="file" required>
+    <textarea name="description" placeholder="Enter a description..."></textarea>
+    <button type="submit">Upload</button>
+  </form>
+  <p id="result"></p>
+
+  <h2>Uploaded Files</h2>
+  <ul id="fileList"></ul>
+
+  <script>
+    const form = document.getElementById('uploadForm');
+    const fileInput = form.querySelector('input[type="file"]');
+    const descInput = form.querySelector('textarea');
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const result = document.getElementById('result');
+    const fileList = document.getElementById('fileList');
+    const themeToggle = document.getElementById('themeToggle');
+  
+    const loadFiles = async () => {
+      fileList.innerHTML = '';
+      const res = await fetch('/files');
+      const files = await res.json();
+      files.forEach(file => {
+        const li = document.createElement('li');
+        const thumbSrc = file.thumb || '/default-icons/file.png';
+        li.innerHTML = `
+          <a href="${file.url}" target="_blank">
+            <img src="${thumbSrc}" alt="${file.name}" class="thumb">
+          </a>
+          <a href="${file.url}" target="_blank">${file.name}</a>
+          <div class="description">${file.description || 'No description available'}</div>
+        `;
+        fileList.appendChild(li);
+      });
+    };
+  
+    const startCooldown = () => {
+      fileInput.disabled = true;
+      fileInput.value = '';
+      result.textContent = "Cooldown: Please wait 15 seconds...";
+      let countdown = 15;
+      const interval = setInterval(() => {
+        countdown--;
+        result.textContent = `Cooldown: Please wait ${countdown} second${countdown !== 1 ? 's' : ''}...`;
+        if (countdown <= 0) {
+          clearInterval(interval);
+          fileInput.disabled = false;
+          result.textContent = '';
+        }
+      }, 1000);
+    };
+  
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+  
+      if (!fileInput.files.length) {
+        result.textContent = 'Please select a file.';
+        return;
+      }
+  
+      const formData = new FormData(form);
+      submitBtn.disabled = true;
+      result.textContent = 'Uploading...';
+  
+      try {
+        const res = await fetch('/upload', { method: 'POST', body: formData });
+        const data = await res.json();
+  
+        if (data.url) {
+          result.innerHTML = `<a href="${data.url}" target="_blank">${data.url}</a>`;
+          await loadFiles();
+          descInput.value = '';
+          startCooldown();
+        } else {
+          result.textContent = data.error || 'Upload failed.';
+        }
+      } catch (err) {
+        result.textContent = 'Error uploading.';
+      } finally {
+        submitBtn.disabled = false;
+      }
+    });
+  
+    const applyTheme = (theme) => {
+      document.body.classList.toggle('dark', theme === 'dark');
+      localStorage.setItem('theme', theme);
+    };
+  
+    themeToggle.addEventListener('click', () => {
+      const newTheme = document.body.classList.contains('dark') ? 'light' : 'dark';
+      applyTheme(newTheme);
+    });
+  
+    window.onload = () => {
+      const storedTheme = localStorage.getItem('theme') || 'light';
+      applyTheme(storedTheme);
+      loadFiles();
+    };
+  </script>
+  
